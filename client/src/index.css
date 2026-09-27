@@ -109,3 +109,27 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+.auth-switch {
+  margin: 20px 0 0;
+  text-align: center;
+  color: #cad5e4;
+}
+
+.auth-switch button {
+  display: inline;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #155e75;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-switch button:hover {
+  background: none;
+  text-decoration: underline;
+}
