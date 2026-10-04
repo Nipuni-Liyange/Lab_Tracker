@@ -1,145 +1,127 @@
 # Lab Track
 
-Lab Track is a University Lab Equipment Booking and Management System.
+A university laboratory equipment booking and management website using React, Express and local MongoDB. The animated login and responsive student/admin workspaces use the project's blue, black and white theme.
 
-Students will be able to view available laboratory equipment and request bookings. Administrators will be able to manage equipment, review booking requests, and monitor availability.
+## Features
 
-## Completed: registration and login
+| Students | Administrators |
+| --- | --- |
+| Register and sign in | Register with the private server admin code |
+| Search equipment, categories, labs and availability | Add and edit individual equipment assets |
+| Read usage instructions and reserved times | Mark equipment for maintenance or archive it |
+| Request bookings for administrator approval | Approve requests or reject with a reason |
+| Track and cancel pending/approved bookings | Record checkout and return; monitor overdue items |
+| View a personal schedule | View the lab schedule and member directory |
+| Edit profile and change password | View reports, export CSV and manage own account |
 
-- Student and admin registration, validation, and password hashing
-- Unique email addresses and student registration numbers
-- Server-side admin registration code and login role checks
-- MongoDB-backed sessions lasting seven days, restored after refresh or restart
-- Signed-in account page and logout that revokes the session
-- Protected account endpoint and admin-only profile endpoint
-- Expired/deleted-account session rejection and login/registration attempt limits
-
-## Planned features
-
-- View available equipment
-- Request equipment bookings
-- Administrator approval or rejection of requests
-- Equipment and booking management
-
-## Technologies
-
-- Frontend: React
-- Backend: Node.js and Express
-- Database: MongoDB
+All records are saved in MongoDB. Dashboards refresh every 30 seconds and have a manual refresh button. Existing accounts continue to work.
 
 ## Run locally (Windows PowerShell)
 
-Make sure the local **MongoDB** Windows service is running. MongoDB Compass is a
-database viewer; the MongoDB server service must also be running.
-
-From the project folder, start both the backend and frontend with one command:
+Use Node.js 20.19+ and a running local MongoDB server. MongoDB Compass is a database viewer; opening Compass alone does not start the database service.
 
 ```powershell
 cd "D:\Lab Tracker\Lab_Tracker"
+npm install --prefix server
+npm install --prefix client
+```
+
+For first-time setup, if `server/.env` does not exist, copy `server/.env.example` to `server/.env` and set your private `ADMIN_REGISTRATION_CODE`. Do not overwrite an existing `.env` or commit it. Existing terminal environment variables override the file. Restart the backend after changing configuration.
+
+```powershell
+npm run seed --prefix server
 npm run dev
 ```
 
-Keep that terminal open while using the app. Run this command again after
-restarting your computer. It starts the backend on port 5000, waits for MongoDB,
-then starts the frontend on port 5173. Existing healthy Lab Track servers are
-reused. Press Ctrl+C to stop only the servers started by this command.
+Open **http://localhost:5173**. Keep the terminal open and run this command again after restarting your computer. The launcher starts the backend on port 5000, waits for MongoDB, and starts Vite on port 5173. Healthy existing Lab Track processes are reused. Ctrl+C stops processes created by the launcher.
 
-If dependencies have not been installed yet, run `npm install --prefix server`
-and `npm install --prefix client` first. The root launcher needs no dependencies.
-For custom ports, use the separate-terminal commands below and update the proxy.
+The database defaults to `mongodb://127.0.0.1:27017/lab_tracker`. Set `MONGODB_URI` to change it. Check **http://localhost:5000/api/health** for database status.
 
-If the page says it cannot connect, the frontend may be running without the
-backend. Starting only `npm run dev` inside `client` does not start the backend.
-Use the command above; the page retries its connection automatically.
+The seed command adds six assets marked **SAMPLE**, with `SAMPLE-` asset codes. It can be run again without overwriting existing records or duplicating samples. These are example inventory records, not verified university equipment. An administrator can edit or archive them. No default accounts or passwords are created.
 
-### Starting each server separately
+## Try a complete booking
 
-Start the backend in one terminal:
+1. Register a student with a unique email and registration number, then log in.
+2. Open **Equipment**, choose **Details & booking**, select a future slot and enter a purpose. Submit the request.
+3. Log out and sign in as an administrator. To register an admin, use the private code in `server/.env`. Select **Admin** when logging in.
+4. Open **Booking requests** and approve the request. The student sees the status in **My bookings** and **Schedule**.
+5. During the approved time slot, select **Check out** when handing over the item.
+6. After it is returned, select **Record return**. The booking remains in **Returned** history and reports.
 
-```powershell
-cd server
-npm install
-npm start
-```
+Use separate browser profiles or a private window to test both roles at once; tabs in the same profile share the login cookie.
 
-Use `npm run dev` instead of `npm start` while editing the backend to reload it
-automatically when files change. Otherwise stop the old process with Ctrl+C and
-restart it after edits. Use Node.js 20.19+ (this project was checked on 20.20).
+## Booking rules
 
-The backend connects to `mongodb://127.0.0.1:27017/lab_tracker` and listens on port
-5000. Open `http://localhost:5000/api/health` to check the database connection.
-You can override the database address using the `MONGODB_URI` environment variable.
+- One record represents one physical item. Use separate unique asset codes for multiple units.
+- Requests must start in the future, within 90 days, and last no more than 8 hours. Times are stored in UTC and displayed in the browser's local timezone.
+- Every request needs administrator approval. Pending requests do not reserve a slot, so different students may request overlapping times.
+- Atomic MongoDB updates prevent overlapping approvals, including simultaneous administrator actions. Consecutive slots may meet at their boundaries.
+- Students cannot create duplicate overlapping pending requests for an asset or modify another student's bookings.
+- Requests cannot be approved after their start time. Reject stale requests and ask students to select a new slot.
+- Checkout is permitted only during the approved slot, with one checked-out booking per item. An overdue item blocks new reservations until its return is recorded.
+- Maintenance blocks new requests and approvals. Resolve active approved/checked-out bookings before maintenance. Archiving also requires resolving pending requests and preserves history.
+- Students see only their own booking details. Equipment schedules show reserved times without other students' identities or purposes.
 
-Start the frontend in a second terminal, from the project folder:
+## Accounts and security
 
-```powershell
-cd client
-npm install
-npm run dev
-```
+Passwords are hashed with bcrypt. Emails and registration numbers are normalized and unique. Admin registration requires a private backend code; that code is not stored in user records or sent to the frontend.
 
-Open `http://localhost:5173`. Vite forwards
-`/api` requests to the backend on port 5000. If you change the backend port, also
-update `client/vite.config.js`.
+Sessions last seven days, use HttpOnly/SameSite cookies, and store only a hash of the session token in MongoDB. Logout revokes the session. Changing a password requires the current password and revokes existing sessions. Profile editing cannot change a role or email. Login, registration and password changes are rate limited.
 
-Student registration saves the name, email, registration number, role, and a
-hashed password in `lab_tracker.users`. Email addresses and registration numbers
-are trimmed, lowercased, and unique. After registration, the form returns to login.
-Existing accounts can still log in.
+POST, PATCH, PUT and DELETE API requests require JSON and check the request origin. Use the frontend URL consistently: `localhost` and `127.0.0.1` have separate cookies. Set `CLIENT_ORIGIN` for a custom frontend origin. Public hosting requires HTTPS and `NODE_ENV=production` for Secure cookies.
 
-For admin registration, set a private code in the **backend terminal before
-starting the server**:
+This local version includes the core equipment booking workflows. Email verification, forgotten-password recovery, email/SMS notifications, institutional SSO and public hosting are not configured. Booking updates are visible inside the website.
 
-```powershell
-$env:ADMIN_REGISTRATION_CODE = 'replace-with-your-own-private-code'
-npm start
-```
+## Architecture
 
-Use that code in the Admin Code field. Admin registration is disabled until this
-variable is set; student registration does not need it. The code is never saved
-in a user record or sent to the frontend. To keep the configuration between
-terminal sessions, copy `server/.env.example` to `server/.env`, enter your own
-private code, and restart the backend. The server loads this file at startup;
-it is excluded from Git. Existing environment variables take precedence.
+- `client/src/App.jsx`: registration, login and session restoration.
+- `client/src/Dashboard.jsx` / `Dashboard.css`: role-specific inventory, bookings, schedule, members, reports and account forms.
+- `server/index.js` / `auth.js`: startup, authentication, sessions and origin checks.
+- `server/lab.js`: authorized inventory and booking operations.
+- `server/models/Equipment.js`: equipment and embedded booking history, allowing atomic schedule checks with standalone local MongoDB, without a replica set.
+- `server/sample-equipment.js`: repeatable sample inventory import.
 
-## Login behavior
+| Endpoint | Purpose |
+| --- | --- |
+| `POST /api/auth/register`, `POST /api/auth/login` | Register / authenticate |
+| `GET /api/auth/me`, `POST /api/auth/logout` | Restore / revoke session |
+| `GET /api/lab/equipment` | Signed-in inventory and anonymized schedules |
+| `POST /api/lab/equipment`, `PATCH /api/lab/equipment/:id` | Admin inventory changes |
+| `GET /api/lab/bookings` | Own bookings for students; all bookings for admin |
+| `POST /api/lab/bookings` | Student request |
+| `POST /api/lab/bookings/:id/action` | Approve, reject, cancel, checkout or return with role/state checks |
+| `GET /api/lab/members` | Admin member directory |
+| `PATCH /api/lab/profile`, `POST /api/lab/password` | Account changes |
 
-Successful login shows the saved account's name, email, registration number
-(students), and role. Existing accounts created before the registration fix can
-still log in; missing old profile fields display "Not provided".
-
-The browser keeps an HttpOnly, SameSite=Strict cookie. Only a SHA-256 hash of its
-random session token is stored in `lab_tracker.sessions`. Sessions expire after
-seven days; refreshing the page or restarting the server does not log users out.
-Logout removes the session from MongoDB and clears the cookie. The page checks
-the session again when the browser window gains focus.
-
-- `POST /api/auth/register`: create an account; does not automatically log in.
-- `POST /api/auth/login`: verify credentials/selected role and create a session.
-- `GET /api/auth/me`: restore the current account; requires a valid session.
-- `POST /api/auth/logout`: revoke the browser's session.
-- `GET /api/admin/profile`: requires a valid administrator session.
-
-All POST requests require JSON and enforce the request origin when provided.
-Use the Vite frontend URL consistently (switching between `localhost` and
-`127.0.0.1` uses different cookies). Development allows the Vite origin on port
-5173 and direct same-origin requests. If using a different frontend origin or
-deploying behind a proxy, set `CLIENT_ORIGIN` to the exact frontend origin.
-Production hosting must use HTTPS and `NODE_ENV=production`
-to enable Secure cookies. Login and registration each allow 30 attempts per IP
-per 15 minutes; these limits reset on server restart.
-
-This milestone ends at the signed-in account screen. Equipment booking and
-management screens are future work. Email verification and password recovery
-are not part of this milestone.
+For a large deployment, add pagination and partition older embedded booking history before approaching MongoDB's document-size limit. The current dashboard loads inventory/history together.
 
 ## Checks
 
-Run `npm test` in `server` while local MongoDB is running. Integration tests use
-a separate temporary database and remove it afterwards, leaving `lab_tracker`
-untouched. Run `npm run lint` and `npm run build` in `client`.
+```powershell
+npm test --prefix server
+npm run lint --prefix client
+npm run build --prefix client
+```
 
-To verify manually: register a new student, log in, refresh and confirm the
-account page remains, then log out and refresh to confirm the login form returns.
-Wrong passwords and selecting Admin for a student account must fail.
+Server tests require local MongoDB. They use uniquely named temporary databases and remove only those databases afterwards. Coverage includes authentication, validation, roles, ownership, concurrent approvals/edits, maintenance, archive history, overdue returns, password revocation and sample import.
 
+## Troubleshooting
+
+For separate terminals, run `npm run dev` in `server` and in `client`. Starting only the client does not start the backend. `npm start` in `server` runs without automatic reload.
+
+- **Unable to connect:** check the MongoDB service, then run the root `npm run dev`. Inspect `/api/health`.
+- **Port 5173 already in use:** use the existing page or root launcher; do not start a second Vite instance.
+- **Admin registration not configured:** set `ADMIN_REGISTRATION_CODE` in `server/.env`, restart the backend, and enter the same code in the form.
+- **Older interface after edits:** refresh the browser. If Vite still serves cached files, restart its terminal.
+- **Schedule conflict:** refresh bookings. Another request may have been approved or an item may be overdue.
+
+## Optional Docker setup
+
+The existing `compose.yaml` runs MongoDB, the API and nginx at **http://localhost:8080**. Configure `server/.env`, then run:
+
+```powershell
+docker compose up --build -d
+docker compose exec server npm run seed
+```
+
+Docker uses its own `mongo_data` volume, separate from Windows MongoDB. nginx proxies `/api` and preserves the original host and port. If `CLIENT_ORIGIN` is set, use `http://localhost:8080` for this setup. Add HTTPS and production configuration before public hosting. Docker execution is not included in the local Node/MongoDB checks above.

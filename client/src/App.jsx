@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import Dashboard from './Dashboard'
 import './App.css'
 
 const connectionMessage = 'The login service is temporarily unavailable. We will reconnect automatically when it is available.'
@@ -43,6 +44,13 @@ function App() {
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const handleExpired = useCallback((reason = 'Your session has ended. Please log in again.') => {
+    setSession(null)
+    setPassword('')
+    setShowPassword(false)
+    setIsRegistering(false)
+    setMessage(reason)
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -176,6 +184,9 @@ function App() {
     }
   }
 
+  if (session) return <Dashboard user={session.user} onLogout={handleLogout} loggingOut={isLoading} logoutError={message}
+    onExpired={handleExpired} onProfile={user => setSession(current => ({ ...current, user }))} />
+
   return (
     <div className="auth-page">
       <header className="site-header">
@@ -194,7 +205,7 @@ function App() {
         <div className="welcome-caption"><Icon name="flask" /><span>FOR STUDENTS & LAB ADMINISTRATORS</span></div>
       </section>
       <div className="auth-column">
-      <div className={`auth-frame${isRegistering && !session ? ' is-registering' : ''}`}>
+      <div className={`auth-frame${isRegistering ? ' is-registering' : ''}`}>
       {isCheckingSession ? (
         <section className="auth-panel account-card connection-card" aria-live="polite">
           <span className="loading-ring" aria-hidden="true" />
@@ -209,25 +220,6 @@ function App() {
             setIsCheckingSession(true)
             setSessionCheck(value => value + 1)
           }}>Try again</button>
-        </section>
-      ) : session ? (
-        <section className="auth-panel account-card" aria-labelledby="account-title">
-          <div className="panel-emblem"><Icon name="shield" /></div>
-          <p className="account-badge">{session.user.role === 'admin' ? 'Administrator' : 'Student'} account</p>
-          <h2 id="account-title">Welcome{session.user.name ? `, ${session.user.name}` : ''}!</h2>
-          <p>You are successfully logged in to Lab Track.</p>
-          <dl className="account-details">
-            <dt>Name</dt><dd>{session.user.name || 'Not provided'}</dd>
-            <dt>Email</dt><dd>{session.user.email}</dd>
-            {session.user.role === 'student' && <>
-              <dt>Registration number</dt><dd>{session.user.registrationNumber || 'Not provided'}</dd>
-            </>}
-            <dt>Role</dt><dd>{session.user.role === 'admin' ? 'Administrator' : 'Student'}</dd>
-          </dl>
-          <button type="button" onClick={handleLogout} disabled={isLoading}>
-            {isLoading ? 'Logging out...' : 'Log out'}
-          </button>
-          {message && <p className="auth-message" role="status">{message}</p>}
         </section>
       ) : <form className="auth-panel" key={isRegistering ? 'register' : 'login'} onSubmit={handleSubmit} aria-labelledby="auth-title">
         <div className="panel-emblem"><Icon name={isRegistering ? 'user' : 'lock'} /></div>
