@@ -1,0 +1,165 @@
+.workspace { --ws-bg: #080f1b; --ws-surface: #101c2d; --ws-border: #22334a; --ws-muted: #94a8c2; min-height: 100svh; background: var(--ws-bg); color: #edf4ff; display: grid; grid-template-columns: 232px minmax(0, 1fr); font-size: 14px; line-height: 1.5; }
+.workspace button, .workspace a, .ws-dialog button { -webkit-tap-highlight-color: transparent; }
+.workspace a { color: inherit; text-decoration: none; }
+.workspace button:focus-visible, .workspace a:focus-visible, .ws-dialog button:focus-visible { outline: 2px solid #8fccff; outline-offset: 3px; }
+.workspace h1, .workspace h2, .workspace h3, .ws-dialog h2, .ws-dialog h3 { color: #f4f8ff; margin: 0; }
+.workspace h2 { font-size: 23px; letter-spacing: -.6px; line-height: 1.3; font-weight: 620; }
+.workspace h3, .ws-dialog h3 { font-size: 15px; font-weight: 600; }
+.workspace svg, .ws-dialog svg { flex-shrink: 0; }
+.ws-sidebar { position: sticky; top: 0; height: 100svh; padding: 32px 20px 22px; border-right: 1px solid #1d2b3f; background: #0b1423; display: flex; flex-direction: column; overflow-y: auto; }
+.ws-brand { display: flex; align-items: center; gap: 5px; font-size: 25px; font-weight: 730; letter-spacing: -1px; padding: 0 4px; }
+.ws-brand > span { width: 39px; height: 39px; display: grid; place-items: center; margin-right: 5px; border: 1px solid #315479; background: #10273e; border-radius: 11px; color: #74bfff; }
+.ws-brand strong { color: #6bb9ff; }
+.ws-workspace-label { margin: 40px 12px 16px; font-size: 9px; color: #8aa1bd; letter-spacing: 1.7px; }
+.ws-sidebar nav { display: grid; gap: 6px; }
+.ws-sidebar nav a { display: flex; align-items: center; gap: 11px; padding: 12px 13px; border: 1px solid transparent; border-radius: 9px; color: #a2b4cc; font-size: 12px; transition: background .2s, color .2s; }
+.ws-sidebar nav a:hover { background: #142338; color: #fff; }
+.ws-sidebar nav a[aria-current='page'] { color: #a5d5ff; background: linear-gradient(100deg, #193b60, #142841); border-color: #29517b; }
+.ws-sidebar nav a b { margin-left: auto; background: #4d9ff4; color: #05192b; border-radius: 5px; padding: 0 5px; font-size: 10px; }
+.ws-sidebar-note { margin: auto 0 24px; padding: 26px 12px 12px; color: #76b4e6; }
+.ws-sidebar-note h3 { margin-top: 13px; color: #b8cce4; font-size: 13px; line-height: 1.7; }
+.ws-sidebar-note p { color: #7f94ae; font-size: 10px; margin-top: 6px; }
+.ws-profile-shortcut { display: flex; align-items: center; gap: 10px; width: 100%; padding: 17px 4px; border: 0; border-top: 1px solid var(--ws-border); background: transparent; color: #dde8f6; text-align: left; }
+.ws-profile-shortcut > span:last-child { min-width: 0; }
+.ws-profile-shortcut strong { display: block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
+.ws-profile-shortcut small { display: block; color: #839ab6; font-size: 10px; margin-top: 2px; }
+.ws-avatar { flex-shrink: 0; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #254865; border: 1px solid #42688c; color: #c3e3ff; font-weight: 600; }
+.ws-avatar.small { width: 34px; height: 34px; font-size: 13px; }
+.ws-logout { display: flex; gap: 10px; align-items: center; border: 0; background: none; color: #9fb2ca; padding: 7px 8px; font-size: 12px; }
+.ws-logout:hover { color: white; }
+.ws-main { min-width: 0; }
+.ws-topbar { height: 96px; display: flex; align-items: center; justify-content: space-between; padding: 0 38px; border-bottom: 1px solid #1c2b3f; background: #0b1421; gap: 16px; }
+.ws-breadcrumb { color: #8fa4bf; font-size: 10px; }
+.ws-breadcrumb > span { padding: 0 7px; color: #516883; }
+.ws-topbar h1 { font-size: 21px; line-height: 1.3; margin-top: 5px; letter-spacing: -.5px; font-weight: 610; }
+.ws-topbar-right { display: flex; align-items: center; gap: 18px; }
+.ws-today { color: #a8bad0; font-size: 11px; }
+.ws-icon-button { border: 1px solid #2b405a; background: #132338; color: #bdd9f5; width: 35px; height: 35px; border-radius: 9px; display: grid; place-items: center; padding: 0; }
+.ws-icon-button:hover { background: #203c5b; }
+.ws-content { max-width: 1500px; padding: 32px 38px 0; margin: 0 auto; }
+.ws-hero { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 218px; padding: 32px 36px; background: linear-gradient(108deg, #173b61, #102b49 65%, #0d2139); border: 1px solid #285072; border-radius: 15px; }
+.ws-hero::before { content: ''; z-index: -1; position: absolute; inset: 0; background: linear-gradient(90deg, #143558, #143558cc, #14355888), url('/lab-equipment.png') right center / cover; opacity: .25; }
+.ws-kicker { display: block; font-size: 9px; color: #8cc3f3; letter-spacing: 1.8px; font-weight: 550; }
+.ws-hero h2 { font-size: clamp(24px, 2.5vw, 34px); letter-spacing: -.9px; margin: 12px 0 9px; }
+.ws-hero p { color: #b1c9e4; max-width: 490px; font-size: 12px; }
+.ws-hero .ws-button { margin-top: 23px; }
+.ws-hero-art { position: relative; width: 172px; height: 172px; display: grid; place-items: center; color: #acd8ff; flex-shrink: 0; }
+.ws-hero-art > div { position: absolute; inset: 0; border: 1px solid #71baff3d; border-radius: 50%; box-shadow: 0 0 0 21px #70baff09, 0 0 0 42px #70baff05; }
+.ws-button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; padding: 11px 17px; min-height: 40px; border: 1px solid #539bdd; background: #2677c4; color: #fff; border-radius: 8px; font-size: 12px; font-weight: 570; transition: background .2s, transform .2s; }
+.ws-button:hover { background: #338fdf; transform: translateY(-1px); }
+.ws-button.secondary { background: #14263b; border-color: #34506c; color: #c3ddf7; }
+.ws-button.secondary:hover { background: #203b58; }
+.ws-button.small { min-height: 32px; padding: 7px 12px; font-size: 11px; }
+.ws-button:disabled, .workspace button:disabled, .ws-dialog button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.ws-text-button { border: 0; background: transparent; color: #85c0f4; display: inline-flex; align-items: center; gap: 6px; padding: 6px 0; font-size: 12px; }
+.ws-text-button:hover { color: #d6eeff; }
+.ws-text-button.danger { color: #eba9ad; }
+.ws-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.ws-stat { border: 1px solid var(--ws-border); background: var(--ws-surface); border-radius: 12px; padding: 20px; }
+.ws-stat > div { display: flex; gap: 8px; justify-content: space-between; align-items: center; color: #a7bbd4; font-size: 11px; }
+.ws-stat > div svg { color: #6bb1ed; }
+.ws-stat > strong { display: block; font-size: 32px; font-weight: 570; line-height: 1.4; margin: 10px 0 3px; letter-spacing: -1px; }
+.ws-stat small { color: #8aa1bc; font-size: 10px; }
+.ws-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 33px 0 18px; }
+.ws-section-heading.first { margin-top: 0; }
+.ws-section-heading h2 { font-size: 21px; }
+.ws-section-heading .ws-kicker { margin-bottom: 7px; font-size: 8px; }
+.ws-section-heading p { color: var(--ws-muted); font-size: 12px; margin-top: 8px; }
+.ws-panel { background: var(--ws-surface); border: 1px solid var(--ws-border); border-radius: 12px; }
+.ws-empty { padding: 38px 20px; text-align: center; color: #709dc7; }
+.ws-empty svg { margin-bottom: 12px; }
+.ws-empty h3 { font-size: 15px; }
+.ws-empty p { color: #93a9c4; font-size: 12px; max-width: 400px; margin: 8px auto 0; }
+.ws-empty .ws-button { margin: 16px auto 0; display: flex; width: fit-content; }
+.ws-equipment-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 19px; }
+.ws-equipment-card { border: 1px solid var(--ws-border); border-radius: 12px; overflow: hidden; background: var(--ws-surface); transition: border-color .2s; }
+.ws-equipment-card:hover { border-color: #446e9a; }
+.ws-equipment-visual { width: 100%; height: 152px; border: 0; position: relative; isolation: isolate; overflow: hidden; color: #9ccdf7; background: radial-gradient(ellipse at 50% 85%, #274f7580, transparent 70%), #13283e; display: grid; place-items: center; }
+.ws-equipment-visual::after { content: ''; position: absolute; z-index: -1; inset: 0; background: linear-gradient(#5aa5dd08 1px, transparent 1px), linear-gradient(90deg, #5aa5dd08 1px, transparent 1px); background-size: 22px 22px; }
+.ws-equipment-visual > svg { filter: drop-shadow(0 8px 16px #0005); transition: transform .25s; }
+.ws-equipment-visual:hover > svg { transform: translateY(-3px); }
+.ws-orbit { position: absolute; width: 105px; height: 105px; border: 1px solid #6ba8db25; border-radius: 50%; box-shadow: 0 0 0 16px #6ba8db08; }
+.ws-asset-code { position: absolute; bottom: 10px; left: 14px; color: #a9c8e1; font-size: 9px; letter-spacing: 1px; }
+.ws-sample { position: absolute; top: 12px; right: 12px; border: 1px solid #476581; border-radius: 4px; color: #bad3e9; background: #0b1c2c90; font-size: 8px; letter-spacing: 1px; padding: 2px 5px; }
+.ws-equipment-body { padding: 18px; }
+.ws-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 10px; color: #97b0ca; }
+.ws-equipment-body h3 { margin-top: 13px; font-size: 16px; }
+.ws-location { display: flex; align-items: center; gap: 5px; color: #a1b6cf; font-size: 11px; margin-top: 7px; }
+.ws-description { font-size: 11px; color: #90a7c1; line-height: 1.7; margin-top: 12px; min-height: 38px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.ws-card-actions { margin-top: 17px; padding-top: 15px; border-top: 1px solid #24374d; display: flex; gap: 16px; align-items: center; }
+.ws-card-actions .ws-button { flex: 1; font-size: 11px; min-height: 36px; padding: 8px 10px; }
+.ws-badge { display: inline-block; border: 1px solid #3c5671; color: #c4d3e4; background: #1d3045; padding: 3px 8px; font-size: 9px; line-height: 1.5; border-radius: 5px; white-space: nowrap; }
+.ws-badge.available, .ws-badge.completed { color: #9cdbcf; background: #173b3b; border-color: #2f615b; }
+.ws-badge.approved, .ws-badge.reserved { color: #aad5ff; background: #1a3a5d; border-color: #355d85; }
+.ws-badge.pending, .ws-badge.maintenance { color: #eed9a9; background: #3c3420; border-color: #665739; }
+.ws-badge.in_use { color: #c0cfff; background: #2a3659; border-color: #495984; }
+.ws-badge.rejected, .ws-badge.overdue { color: #fac1c6; background: #47252f; border-color: #78414c; }
+.ws-badge.cancelled, .ws-badge.archived { color: #b1bed0; background: #29323e; border-color: #485568; }
+.ws-toolbar { display: flex; gap: 12px; margin: 22px 0 14px; flex-wrap: wrap; }
+.ws-search { display: flex; align-items: center; gap: 10px; padding: 0 14px; min-height: 43px; border: 1px solid #30445f; border-radius: 8px; color: #809dbc; background: #101e30; flex: 1; min-width: 210px; }
+.ws-search input { width: 100%; border: 0; background: none; color: #e3efff; outline: none; min-width: 0; font-size: 12px; padding: 11px 0; }
+.ws-search:focus-within { outline: 2px solid #659dcc; outline-offset: 2px; }
+.ws-search.standalone { margin: 20px 0; max-width: 520px; }
+.ws-toolbar select, .ws-date-picker input { background: #112034; border: 1px solid #30445f; color: #bbcee5; border-radius: 8px; padding: 10px 12px; font-size: 12px; }
+.ws-results { font-size: 10px; color: #9aafc8; margin-bottom: 18px; }
+.ws-filter-tabs { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 25px; }
+.ws-filter-tabs button { padding: 8px 12px; border: 1px solid #2b3e57; background: #101e30; color: #a1b5ce; border-radius: 7px; font-size: 11px; }
+.ws-filter-tabs button[aria-pressed='true'] { background: #21466e; color: #d7ecff; border-color: #4677a3; }
+.ws-booking-row { display: flex; align-items: flex-start; gap: 15px; padding: 22px; border-bottom: 1px solid #24354b; }
+.ws-booking-row:last-child { border-bottom: 0; }
+.ws-booking-icon { flex-shrink: 0; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid #325377; border-radius: 9px; color: #9bc8f1; background: #19334f; }
+.ws-booking-main { flex: 1; min-width: 0; }
+.ws-row-title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ws-booking-main h3 { font-size: 13px; }
+.ws-booking-main p { font-size: 11px; color: #b3c7df; margin-top: 6px; overflow-wrap: anywhere; }
+.ws-booking-main p.ws-muted, .ws-muted { color: #8fa6c2; font-size: 12px; line-height: 1.7; }
+.ws-booking-main p.ws-purpose { color: #d2deed; margin-top: 12px; }
+.ws-review-note { padding: 8px 12px; border-left: 2px solid #6896be; background: #1b2c40; }
+.ws-reference { display: block; font-size: 8px; color: #819ab6; margin-top: 13px; letter-spacing: .8px; }
+.ws-row-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: wrap; max-width: 220px; }
+.ws-date-picker { display: grid; gap: 5px; color: #a1b6cf; font-size: 10px; }
+.ws-week-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin: 26px 0; }
+.ws-week-strip button { display: grid; justify-items: center; gap: 8px; padding: 14px 8px; border: 1px solid #2c415b; background: #101f33; color: #a7bed8; border-radius: 9px; font-size: 10px; }
+.ws-week-strip button strong { font-size: 23px; font-weight: 550; }
+.ws-week-strip button[aria-pressed='true'] { background: #225382; border-color: #5997cc; color: white; }
+.ws-table-wrap { overflow-x: auto; }
+.workspace table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+.workspace th { padding: 15px 20px; font-size: 10px; font-weight: 550; color: #8fa7c1; background: #142439; }
+.workspace td { padding: 19px 20px; font-size: 12px; border-top: 1px solid #24364e; color: #b9cce2; }
+.ws-report-grid, .ws-account-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin: 25px 0; }
+.ws-report { padding: 24px; }
+.ws-report-line { margin-top: 23px; display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: 12px; color: #bacde4; }
+.ws-report-line meter { width: 100%; height: 7px; grid-column: 1 / -1; background: #1e344f; border: 0; border-radius: 9px; }
+.ws-report-line meter::-webkit-meter-bar { background: #1e344f; border: 0; }
+.ws-report-line meter::-webkit-meter-optimum-value { background: #65aee9; }
+.ws-alert { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; padding: 13px 16px; border: 1px solid #375f85; background: #132d46; color: #c4e1fc; font-size: 12px; line-height: 1.6; border-radius: 9px; }
+.ws-alert.error { border-color: #805264; background: #37212e; color: #f5c9d0; }
+.ws-alert button { margin-left: auto; background: transparent; border: 0; color: inherit; font-size: 13px; }
+.ws-footer { display: flex; justify-content: space-between; gap: 15px; font-size: 9px; color: #829bb7; border-top: 1px solid #23344c; padding: 22px 0; margin-top: 35px; }
+.ws-loading { padding: 90px 30px; text-align: center; color: #a4c1de; }
+.ws-dialog { max-width: min(640px, calc(100% - 32px)); width: 640px; max-height: calc(100svh - 48px); color: #d9e7f7; background: #101d30; border: 1px solid #3a5879; padding: 26px; border-radius: 16px; box-shadow: 0 30px 120px #0009; }
+.ws-dialog::backdrop { background: #020712cc; backdrop-filter: blur(5px); }
+.ws-dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding-bottom: 20px; margin-bottom: 18px; border-bottom: 1px solid #2e425c; }
+.ws-dialog h2 { font-size: 21px; font-weight: 600; }
+.ws-dialog p { font-size: 13px; line-height: 1.8; }
+.ws-form { display: grid; gap: 17px; }
+.ws-panel.ws-form { padding: 25px; align-content: start; }
+.ws-form label { display: grid; gap: 7px; font-size: 12px; color: #b5cce4; }
+.ws-form input, .ws-form select, .ws-form textarea { width: 100%; min-width: 0; border: 1px solid #3c526e; background: #0b1626; color: #e7f2ff; padding: 11px 12px; border-radius: 7px; font: inherit; font-size: 13px; }
+.ws-form textarea { resize: vertical; }
+.ws-form input:focus, .ws-form select:focus, .ws-form textarea:focus { outline: 2px solid #5f9dd2; outline-offset: 2px; }
+.ws-form input[readonly] { opacity: .65; }
+.ws-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ws-dialog-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 6px; }
+.ws-detail > p { margin: 14px 0; }
+.ws-detail-meta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; color: #9bb8d4; font-size: 11px; }
+.ws-instructions { margin: 22px 0; background: #192e46; border-left: 2px solid #64a7e0; padding: 14px 18px; }
+.ws-instructions p { margin-top: 6px; color: #b9cde3; }
+.ws-reservations { padding: 0; list-style: none; margin: 12px 0 20px; }
+.ws-reservations li { display: flex; align-items: center; gap: 9px; padding: 9px 0; font-size: 11px; color: #a8c5e0; border-bottom: 1px solid #2a3d54; }
+.ws-booking-form { margin-top: 25px; padding-top: 22px; border-top: 1px solid #30465f; }
+@media (max-width: 500px) { .ws-toolbar .ws-search { flex-basis: 100%; } }
+@media (min-width: 1550px) { .ws-equipment-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 1180px) { .workspace { grid-template-columns: 206px minmax(0, 1fr); } .ws-topbar { padding: 0 25px; } .ws-content { padding: 26px 25px 0; } .ws-equipment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ws-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ws-hero-art { width: 120px; height: 120px; } .ws-hero-art svg { width: 82px; } .ws-booking-row { flex-wrap: wrap; } .ws-row-actions { margin-left: 55px; max-width: none; } }
+@media (max-width: 780px) { .workspace { display: block; } .ws-sidebar { height: auto; position: static; padding: 17px 20px 10px; display: block; border-right: 0; border-bottom: 1px solid #263a54; } .ws-sidebar nav { display: flex; gap: 4px; overflow-x: auto; padding: 13px 0 5px; } .ws-sidebar nav a { white-space: nowrap; padding: 9px 10px; font-size: 11px; } .ws-sidebar nav a svg { width: 16px; height: 16px; } .ws-workspace-label, .ws-sidebar-note, .ws-profile-shortcut { display: none; } .ws-logout { position: absolute; right: 20px; top: 24px; } .ws-brand { font-size: 23px; width: fit-content; } .ws-topbar { height: 80px; padding: 0 20px; } .ws-content { padding: 22px 20px 0; } .ws-hero { padding: 26px; } .ws-hero-art { display: none; } .ws-report-grid, .ws-account-grid { grid-template-columns: 1fr; } .ws-section-heading { align-items: flex-start; } .ws-section-heading h2 { font-size: 20px; } .ws-today { display: none; } .ws-section-heading > .ws-button { flex-shrink: 0; } }
+@media (max-width: 500px) { .ws-equipment-grid { grid-template-columns: 1fr; } .ws-stat { padding: 16px; } .ws-stat > div { font-size: 10px; } .ws-stat > strong { font-size: 28px; } .ws-stat small { font-size: 9px; } .ws-content { padding: 19px 16px 0; } .ws-topbar { padding: 0 16px; } .ws-section-heading { flex-wrap: wrap; gap: 14px; } .ws-toolbar select { flex: 1; min-width: 0; } .ws-week-strip { gap: 5px; } .ws-week-strip button { padding: 12px 4px; } .ws-week-strip button strong { font-size: 19px; } .ws-form-grid { grid-template-columns: 1fr; } .ws-dialog { padding: 20px; } .ws-form input, .ws-form textarea, .ws-form select { font-size: 16px; } .ws-footer { flex-direction: column; gap: 5px; } .ws-booking-row { padding: 17px; gap: 12px; } .ws-booking-icon { width: 31px; height: 31px; } .ws-row-actions { margin-left: 43px; } .ws-dialog-actions .ws-button { flex: 1; } .ws-search input { font-size: 16px; } }
