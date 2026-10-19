@@ -16,7 +16,8 @@ let server
 let baseUrl
 
 before(async () => {
-  await mongoose.connect(`mongodb://127.0.0.1:27017/${databaseName}`, {
+  await mongoose.connect(process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017', {
+    dbName: databaseName,
     serverSelectionTimeoutMS: 5000
   })
   await Promise.all([User.init(), Session.init()])
@@ -227,7 +228,7 @@ test('sessions survive reopening the HTTP server and database connection', async
   const login = await loginStudent()
   await new Promise(resolve => server.close(resolve))
   await mongoose.disconnect()
-  await mongoose.connect(`mongodb://127.0.0.1:27017/${databaseName}`)
+  await mongoose.connect(process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017', { dbName: databaseName })
   server = app.listen(0, '127.0.0.1')
   await once(server, 'listening')
   baseUrl = `http://127.0.0.1:${server.address().port}`

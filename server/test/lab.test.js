@@ -33,7 +33,7 @@ function slot(equipmentId, hours = 24) {
 const act = (bookingId, action, cookie = adminCookie, note = '') => request(`/lab/bookings/${bookingId}/action`, cookie, { action, note })
 
 before(async () => {
-  await mongoose.connect(`mongodb://127.0.0.1:27017/${databaseName}`, { serverSelectionTimeoutMS: 5000 })
+  await mongoose.connect(process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017', { dbName: databaseName, serverSelectionTimeoutMS: 5000 })
   await Promise.all([User.init(), Session.init(), Equipment.init()])
   const passwordHash = await bcrypt.hash(password, 12)
   admin = await User.create({ name: 'Admin', email: 'admin@lab.test', role: 'admin', passwordHash })

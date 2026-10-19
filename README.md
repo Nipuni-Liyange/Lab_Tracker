@@ -124,4 +124,59 @@ docker compose up --build -d
 docker compose exec server npm run seed
 ```
 
-Docker uses its own `mongo_data` volume, separate from Windows MongoDB. nginx proxies `/api` and preserves the original host and port. If `CLIENT_ORIGIN` is set, use `http://localhost:8080` for this setup. Add HTTPS and production configuration before public hosting. Docker execution is not included in the local Node/MongoDB checks above.
+Docker uses its own `mongo_data` volume, separate from Windows MongoDB. nginx proxies `/api` and preserves the original host and port. If `CLIENT_ORIGIN` is set, use `http://localhost:8080` for this setup. Add HTTPS and production configuration before public hosting.
+
+## Equipment images
+
+Administrators can choose an optional image in **Add equipment** or **Edit equipment**, preview it, then select **Save equipment**. Choosing a replacement changes the image only after a successful save. Leaving the file field empty preserves the existing image. Both student and admin cards/details display the image; absent or unavailable images fall back to the existing instrument placeholder.
+
+- Accepted uploads: one JPG/JPEG, PNG or WebP, at most 5 MiB (5,242,880 bytes).
+- Multer bounds file and field sizes. Sharp verifies the actual decoded format, rejects corrupt/animated images and images over 25 megapixels, strips metadata, and fits images within 2000 × 2000 pixels without enlargement.
+- Equipment create/edit accepts JSON as before, or multipart with the same text fields and an `image` file. Multipart requests must include an allowed `Origin`; normal frontend requests do this automatically. Only authenticated administrators reach the upload parser.
+- The equipment record stores the server-generated image filename. Clients receive an `imageUrl` under `/api/lab/equipment/:id/image/:filename`. Reading images requires a valid session. Original filenames are never used for filesystem paths.
+- Failed/conflicting saves remove the newly written file. Successful replacements remove the previous image. A process crash between the filesystem and database operations can leave an unused file; this does not remove the currently referenced image.
+- Existing equipment needs no migration. Bookings, availability rules and authentication remain unchanged.
+
+Local development stores images in `server/uploads/equipment` (excluded from Git and the Docker build context). Override with `EQUIPMENT_IMAGE_DIR` if needed. Docker mounts the new `equipment_images` named volume at `/app/uploads/equipment`. The existing `mongo_data` volume is unchanged. Back up both volumes together.
+
+### Rebuild an existing Docker installation without resetting data
+
+Use **the same Compose project name as the existing installation**. Check it with `docker compose ls`. On this laptop it is `lab_tracker` (with an underscore); using a different name selects different volumes.
+
+From the project root in PowerShell:
+
+```powershell
+docker compose -p lab_tracker config --quiet
+docker compose -p lab_tracker build server client
+docker compose -p lab_tracker up -d --no-deps --wait server client
+docker compose -p lab_tracker ps
+```
+
+These commands assume the existing `mongo` service is already running. If it is stopped, start it first with `docker compose -p lab_tracker up -d mongo`. No database reset, reseeding or migration is needed. Do not run `down -v`, remove volumes or change the Compose project name during the update.
+
+Open **http://localhost:8080**. As an admin, add/edit an item, choose an image, verify its preview and save. Confirm its card/detail image as both roles. Replace the image and confirm the new image appears. To verify persistence after saving, run:
+
+```powershell
+docker compose -p lab_tracker up -d --no-deps --force-recreate --wait server client
+```
+
+Refresh and confirm the saved image remains visible. The image and MongoDB volumes stay mounted across container replacement.
+
+### Automated image tests
+
+```powershell
+npm test --prefix server
+npm run lint --prefix client
+npm run build --prefix client
+```
+
+The image integration tests use a unique test database and temporary image directory. They cover all accepted formats, the exact 5 MiB boundary, corrupt/spoofed files, authorization, origin checks, concurrent replacement, cleanup after failed writes, missing files and server restarts.
+
+To run the full server test suite inside the Docker backend image against the existing MongoDB service (only unique test databases are created/deleted):
+
+```powershell
+$testPath = (Resolve-Path ./server/test).Path
+docker compose -p lab_tracker run --rm --no-deps -e TEST_MONGODB_URI=mongodb://mongo:27017 -v "${testPath}:/app/test:ro" server npm test
+```
+
+The production image deliberately excludes test files, so the command mounts them read-only. Tests never select the application's `lab_tracker` database. Test uploads use a separate temporary directory, not the persistent equipment image directory.

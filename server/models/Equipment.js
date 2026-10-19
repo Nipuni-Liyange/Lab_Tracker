@@ -23,6 +23,7 @@ const schema = new mongoose.Schema({
   instructions: { type: String, default: '', maxlength: 2000 },
   status: { type: String, enum: ['available', 'maintenance', 'archived'], default: 'available' },
   sample: { type: Boolean, default: false },
+  image: { type: String },
   revision: { type: Number, default: 0 },
   bookings: [bookingSchema]
 }, { timestamps: true })

@@ -21,9 +21,12 @@ app.use(express.json({ limit: '16kb' }))
 app.use('/api', (req, res, next) => {
   res.set('Cache-Control', 'no-store')
   if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) {
-    // Browser forms cannot submit JSON; cross-origin JSON requests need CORS,
-    // which this same-origin API deliberately does not enable.
-    if (!req.is('application/json')) {
+    // Multipart is allowed only for equipment saves. The same origin check below
+    // also protects uploads, since browsers can submit multipart cross-origin.
+    const equipmentMultipart = req.is('multipart/form-data') && (
+      (req.method === 'POST' && req.path === '/lab/equipment') ||
+      (req.method === 'PATCH' && /^\/lab\/equipment\/[a-fA-F0-9]{24}$/.test(req.path)))
+    if (!req.is('application/json') && !equipmentMultipart) {
       return res.status(415).json({ message: 'Requests must use JSON.' })
     }
     const origin = req.get('origin')
@@ -34,7 +37,7 @@ app.use('/api', (req, res, next) => {
           ...(process.env.NODE_ENV === 'production'
             ? [] : ['http://localhost:5173', 'http://127.0.0.1:5173'])
         ]
-    if (origin && !allowedOrigins.includes(origin)) {
+    if ((equipmentMultipart && !origin) || (origin && !allowedOrigins.includes(origin))) {
       return res.status(403).json({ message: 'Request origin is not allowed.' })
     }
   }

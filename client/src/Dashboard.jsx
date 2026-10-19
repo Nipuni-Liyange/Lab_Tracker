@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './Dashboard.css'
+import { EquipmentImage, EquipmentImageField } from './EquipmentImage'
 
 const statusNames = { pending: 'Pending approval', approved: 'Approved', rejected: 'Rejected', cancelled: 'Cancelled', in_use: 'In use', completed: 'Returned', available: 'Available', reserved: 'Reserved', maintenance: 'Maintenance', archived: 'Archived' }
 const date = value => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
@@ -10,7 +11,7 @@ const emptyEquipment = { name: '', assetCode: '', category: 'Electronics', locat
 async function api(path, body, method = 'POST', signal) {
   const response = await fetch(`/api/lab${path}`, {
     method: body === undefined ? 'GET' : method, credentials: 'same-origin', signal,
-    ...(body === undefined ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    ...(body === undefined ? {} : body instanceof FormData ? { body } : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
   })
   const data = await response.json().catch(() => ({ message: 'Cannot reach the server. Check your connection.' }))
   if (!response.ok) { const error = new Error(data.message || 'Request failed.'); error.status = response.status; throw error }
@@ -56,7 +57,7 @@ function Modal({ title, children, onClose, busy }) {
 function EquipmentCard({ item, admin, onOpen, onEdit }) {
   return <article className="ws-equipment-card">
     <button className={`ws-equipment-visual category-${item.category.toLowerCase().replace(/[^a-z]/g, '')}`} onClick={() => onOpen(item)} aria-label={`View ${item.name}`}>
-      <div className="ws-orbit" /><Symbol name={item.category === 'Microscopy' ? 'microscope' : item.category === 'Chemistry' || item.category === 'Life sciences' ? 'flask' : 'equipment'} size={64} />
+      <EquipmentImage src={item.imageUrl} alt={item.name}><div className="ws-orbit" /><Symbol name={item.category === 'Microscopy' ? 'microscope' : item.category === 'Chemistry' || item.category === 'Life sciences' ? 'flask' : 'equipment'} size={64} /></EquipmentImage>
       <span className="ws-asset-code">{item.assetCode}</span>{item.sample && <span className="ws-sample">SAMPLE</span>}
     </button>
     <div className="ws-equipment-body"><div className="ws-card-meta"><span>{item.category}</span><Badge status={item.availability} /></div><h3>{item.name}</h3><p className="ws-location"><Symbol name="location" size={14} />{item.location}</p><p className="ws-description">{item.description || 'Contact the lab administrator for more information.'}</p>
@@ -111,6 +112,7 @@ export default function Dashboard({ user, onLogout, loggingOut, logoutError, onE
   const [modalError, setModalError] = useState('')
   const [busy, setBusy] = useState(false)
   const [draft, setDraft] = useState(emptyEquipment)
+  const [imageFile, setImageFile] = useState(null)
   const [slot, setSlot] = useState({ start: '', end: '', purpose: '' })
   const [note, setNote] = useState('')
   const [calendarDay, setCalendarDay] = useState(dayKey(new Date()))
@@ -140,7 +142,19 @@ export default function Dashboard({ user, onLogout, loggingOut, logoutError, onE
 
   const navigate = target => { location.hash = target; setPage(target); setNotice('') }
   const open = value => { setModalError(''); setNote(''); setModal(value) }
-  const edit = item => { setDraft(item || { ...emptyEquipment }); open({ type: 'edit', item }) }
+  const edit = item => { setDraft(item || { ...emptyEquipment }); setImageFile(null); open({ type: 'edit', item }) }
+  function saveEquipment(event) {
+    event.preventDefault()
+    let body = draft
+    if (imageFile) {
+      body = new FormData()
+      for (const key of ['name', 'assetCode', 'category', 'location', 'description', 'instructions', 'status', 'revision']) {
+        if (draft[key] !== undefined) body.append(key, String(draft[key]))
+      }
+      body.append('image', imageFile)
+    }
+    mutation(() => api(modal.item ? `/equipment/${modal.item._id}` : '/equipment', body, modal.item ? 'PATCH' : 'POST'), 'Equipment saved.')
+  }
   const inspect = item => { const start = new Date(Date.now() + 3600000); start.setMinutes(0, 0, 0); setSlot({ start: localTime(start), end: localTime(new Date(+start + 3600000)), purpose: '' }); open({ type: 'detail', item }) }
   async function mutation(work, success, close = true) {
     setBusy(true); setModalError(''); setError(''); setNotice('')
@@ -223,12 +237,13 @@ export default function Dashboard({ user, onLogout, loggingOut, logoutError, onE
 
     {modal && <Modal title={modal.type === 'edit' ? modal.item ? 'Edit equipment' : 'Add equipment' : modal.type === 'detail' ? modal.item.name : ({ approve: 'Approve booking', reject: 'Reject booking', cancel: 'Cancel booking', checkout: 'Check out equipment', return: 'Record equipment return' }[modal.action])} onClose={() => setModal(null)} busy={busy}>
       {modalError && <div className="ws-alert error" role="alert">{modalError}</div>}
-      {modal.type === 'edit' && <form className="ws-form" onSubmit={event => { event.preventDefault(); mutation(() => api(modal.item ? `/equipment/${modal.item._id}` : '/equipment', draft, modal.item ? 'PATCH' : 'POST'), 'Equipment saved.') }}>
+      {modal.type === 'edit' && <form className="ws-form" onSubmit={saveEquipment}>
+        <EquipmentImageField currentUrl={modal.item?.imageUrl} onChange={setImageFile} disabled={busy} />
         <div className="ws-form-grid"><label>Equipment name<input required maxLength={120} value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} /></label><label>Asset code<input required maxLength={50} value={draft.assetCode} onChange={e => setDraft({ ...draft, assetCode: e.target.value })} /></label><label>Category<input required maxLength={60} list="category-options" value={draft.category} onChange={e => setDraft({ ...draft, category: e.target.value })} /><datalist id="category-options">{['Electronics', 'Microscopy', 'Life sciences', 'Chemistry', 'Physics'].map(c => <option key={c}>{c}</option>)}</datalist></label><label>Lab / location<input required maxLength={120} value={draft.location} onChange={e => setDraft({ ...draft, location: e.target.value })} /></label></div>
         <label>Description<textarea maxLength={2000} rows={3} value={draft.description} onChange={e => setDraft({ ...draft, description: e.target.value })} /></label><label>Use & safety instructions<textarea maxLength={2000} rows={3} value={draft.instructions} onChange={e => setDraft({ ...draft, instructions: e.target.value })} /></label>
         {modal.item && <label>Status<select value={draft.status} onChange={e => setDraft({ ...draft, status: e.target.value })}>{['available', 'maintenance', 'archived'].map(s => <option key={s} value={s}>{statusNames[s]}</option>)}</select></label>}<p className="ws-muted">One record = one physical item. Archiving preserves booking history. Resolve active bookings before maintenance or archiving.</p><button className="ws-button" disabled={busy}>{busy ? 'Saving…' : 'Save equipment'}</button>
       </form>}
-      {modal.type === 'detail' && <div className="ws-detail"><div className="ws-detail-meta"><Badge status={modal.item.availability} /><span>{modal.item.assetCode}</span>{modal.item.sample && <span className="ws-badge">Sample equipment</span>}</div><p className="ws-location"><Symbol name="location" size={16} />{modal.item.location}</p><p>{modal.item.description}</p>{modal.item.instructions && <div className="ws-instructions"><h3>Before you begin</h3><p>{modal.item.instructions}</p></div>}
+      {modal.type === 'detail' && <div className="ws-detail"><div className="ws-equipment-visual ws-detail-image"><EquipmentImage src={modal.item.imageUrl} alt={modal.item.name}><div className="ws-orbit" /><Symbol name={modal.item.category === 'Microscopy' ? 'microscope' : ['Chemistry', 'Life sciences'].includes(modal.item.category) ? 'flask' : 'equipment'} size={64} /></EquipmentImage></div><div className="ws-detail-meta"><Badge status={modal.item.availability} /><span>{modal.item.assetCode}</span>{modal.item.sample && <span className="ws-badge">Sample equipment</span>}</div><p className="ws-location"><Symbol name="location" size={16} />{modal.item.location}</p><p>{modal.item.description}</p>{modal.item.instructions && <div className="ws-instructions"><h3>Before you begin</h3><p>{modal.item.instructions}</p></div>}
         <h3>Reserved time</h3>{modal.item.schedule.length ? <ul className="ws-reservations">{modal.item.schedule.map((s, i) => <li key={i}><Symbol name="clock" size={15} /><span>{date(s.start)} — {date(s.end)}{s.status === 'in_use' && ' · In use'}</span></li>)}</ul> : <p className="ws-muted">No upcoming approved bookings. Availability is checked again when you submit.</p>}
         {!admin && modal.item.status === 'available' && <form className="ws-form ws-booking-form" onSubmit={event => { event.preventDefault(); mutation(() => api('/bookings', { equipmentId: modal.item._id, start: new Date(slot.start).toISOString(), end: new Date(slot.end).toISOString(), purpose: slot.purpose }), 'Your booking request has been sent for approval.') }}><h3>Request your time</h3><div className="ws-form-grid"><label>Start time<input type="datetime-local" required min={localTime(new Date())} value={slot.start} onChange={e => setSlot({ ...slot, start: e.target.value })} /></label><label>End time<input type="datetime-local" required min={slot.start} value={slot.end} onChange={e => setSlot({ ...slot, end: e.target.value })} /></label></div><label>Purpose / course<textarea required maxLength={1000} rows={3} placeholder="Tell us what you’ll be working on…" value={slot.purpose} onChange={e => setSlot({ ...slot, purpose: e.target.value })} /></label><p className="ws-muted">Up to 8 hours per booking, within the next 90 days. Your slot is confirmed only after administrator approval.</p><button className="ws-button" disabled={busy}>{busy ? 'Sending…' : 'Request booking'}<Symbol name="arrow" size={16} /></button></form>}
         {!admin && modal.item.status !== 'available' && <p className="ws-alert">This item is currently unavailable for booking.</p>}

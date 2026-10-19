@@ -78,6 +78,16 @@
 .ws-equipment-visual::after { content: ''; position: absolute; z-index: -1; inset: 0; background: linear-gradient(#5aa5dd08 1px, transparent 1px), linear-gradient(90deg, #5aa5dd08 1px, transparent 1px); background-size: 22px 22px; }
 .ws-equipment-visual > svg { filter: drop-shadow(0 8px 16px #0005); transition: transform .25s; }
 .ws-equipment-visual:hover > svg { transform: translateY(-3px); }
+.ws-equipment-image { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ws-equipment-visual:has(.ws-equipment-image) .ws-asset-code { background: #081727df; padding: 3px 6px; border-radius: 4px; }
+.ws-detail-image { height: 260px; margin-bottom: 20px; border-radius: 9px; }
+.ws-detail-image .ws-equipment-image { object-fit: contain; }
+.ws-image-field { display: grid; gap: 9px; }
+.ws-image-field p { margin: 0; }
+.ws-image-field input::file-selector-button { background: #21466e; color: #e7f2ff; border: 1px solid #4677a3; border-radius: 5px; padding: 7px 10px; margin-right: 10px; cursor: pointer; }
+.ws-image-field [role='alert'] { color: #f5c9d0; font-size: 13px; }
+.ws-image-preview { height: 180px; display: grid; place-items: center; overflow: hidden; background: #0b1626; border: 1px solid #30445f; border-radius: 8px; }
+.ws-image-preview .ws-equipment-image { object-fit: contain; }
 .ws-orbit { position: absolute; width: 105px; height: 105px; border: 1px solid #6ba8db25; border-radius: 50%; box-shadow: 0 0 0 16px #6ba8db08; }
 .ws-asset-code { position: absolute; bottom: 10px; left: 14px; color: #a9c8e1; font-size: 9px; letter-spacing: 1px; }
 .ws-sample { position: absolute; top: 12px; right: 12px; border: 1px solid #476581; border-radius: 4px; color: #bad3e9; background: #0b1c2c90; font-size: 8px; letter-spacing: 1px; padding: 2px 5px; }

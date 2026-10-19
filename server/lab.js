@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs')
 const Equipment = require('./models/Equipment')
 const User = require('./models/User')
 const Session = require('./models/Session')
+const { equipmentUpload, saveWithImage, imageDirectory, filenamePattern } = require('./equipment-images')
 const { requireAuth, requireRole, publicUser, revokeSession, rateLimit } = require('./auth')
 const router = express.Router()
 router.use(requireAuth)
@@ -23,12 +24,13 @@ function equipmentFields(body) {
   }
 }
 function equipmentView(item, admin) {
-  const { bookings, ...rest } = item
+  const { bookings, image, ...rest } = item
   const now = new Date()
   const inUse = bookings.some(b => b.status === 'in_use')
   const reserved = bookings.some(b => b.status === 'approved' && b.start <= now && b.end > now)
   return {
-    ...rest, availability: item.status !== 'available' ? item.status : inUse ? 'in_use' : reserved ? 'reserved' : 'available',
+    ...rest, imageUrl: image ? `/api/lab/equipment/${item._id}/image/${image}` : null,
+    availability: item.status !== 'available' ? item.status : inUse ? 'in_use' : reserved ? 'reserved' : 'available',
     schedule: bookings.filter(b => ['approved', 'in_use'].includes(b.status) && (b.end > now || b.status === 'in_use'))
       .map(b => ({ start: b.start, end: b.end, status: b.status })),
     ...(admin ? { pendingCount: bookings.filter(b => b.status === 'pending').length } : {})
@@ -47,12 +49,27 @@ router.get('/equipment', async (req, res) => {
   res.json({ equipment: items.map(item => equipmentView(item, admin)) })
 })
 
-router.post('/equipment', requireRole('admin'), async (req, res) => {
-  const equipment = await Equipment.create(equipmentFields(req.body || {}))
+router.get('/equipment/:id/image/:filename', async (req, res, next) => {
+  if (!filenamePattern.test(req.params.filename)) fail('Image not found.', 404)
+  const item = await Equipment.findOne({ _id: id(req.params.id), image: req.params.filename,
+    ...(req.user.role === 'admin' ? {} : { status: { $ne: 'archived' } }) }).select('_id').lean()
+  if (!item) fail('Image not found.', 404)
+  res.set('X-Content-Type-Options', 'nosniff')
+  res.sendFile(req.params.filename, { root: imageDirectory(), dotfiles: 'deny', cacheControl: false }, error => {
+    if (!error) return
+    if (res.headersSent) return next(error)
+    if (error.code === 'ENOENT' || error.status === 404) return res.status(404).json({ message: 'Image not found.' })
+    next(error)
+  })
+})
+
+router.post('/equipment', requireRole('admin'), equipmentUpload, async (req, res) => {
+  const fields = equipmentFields(req.body || {})
+  const equipment = await saveWithImage(req, undefined, image => Equipment.create({ ...fields, ...(image ? { image } : {}) }))
   res.status(201).json({ equipment: equipmentView(equipment.toObject(), true) })
 })
 
-router.patch('/equipment/:id', requireRole('admin'), async (req, res) => {
+router.patch('/equipment/:id', requireRole('admin'), equipmentUpload, async (req, res) => {
   const body = req.body || {}
   if (!Number.isInteger(body.revision)) fail('Reload the equipment before saving.')
   const fields = equipmentFields(body)
@@ -65,8 +82,13 @@ router.patch('/equipment/:id', requireRole('admin'), async (req, res) => {
       ...(body.status === 'archived' ? [{ status: 'pending' }] : [])
     ] } } }
   }
-  const updated = await Equipment.findOneAndUpdate(query, { $set: fields, $inc: { revision: 1 } }, { returnDocument: 'after', runValidators: true }).lean()
-  if (!updated) fail('Equipment changed or has active bookings. Refresh, and resolve bookings before maintenance or archiving.', 409)
+  const previous = req.file ? await Equipment.findOne(query).select('image').lean() : null
+  if (req.file && !previous) fail('Equipment changed or has active bookings. Refresh, and resolve bookings before maintenance or archiving.', 409)
+  const updated = await saveWithImage(req, previous?.image, async image => {
+    const result = await Equipment.findOneAndUpdate(query, { $set: { ...fields, ...(image ? { image } : {}) }, $inc: { revision: 1 } }, { returnDocument: 'after', runValidators: true }).lean()
+    if (!result) fail('Equipment changed or has active bookings. Refresh, and resolve bookings before maintenance or archiving.', 409)
+    return result
+  })
   res.json({ equipment: equipmentView(updated, true) })
 })
 
